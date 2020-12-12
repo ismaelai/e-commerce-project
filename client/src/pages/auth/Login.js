@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth, googleAuthProvider } from '../../firebase.js';
 import { toast } from 'react-toastify';
 import { Button } from 'antd';
 import { MailOutlined, GoogleOutlined } from '@ant-design/icons';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 const Login = ({ history }) => {
@@ -11,38 +11,43 @@ const Login = ({ history }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { user } = useSelector((state) => ({ ...state }));
+
+  useEffect(() => {
+    if (user && user.token) history.push('/');
+  }, [user]);
+
   let dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true)
+    setLoading(true);
     // console.table(email, password);
     try {
       const result = await auth.signInWithEmailLinkAndPassword(email, password);
       // console.log(result);
-      const { user } = result
+      const { user } = result;
       const idTokenResult = await user.getIdTokenResult();
-      
+
       dispatch({
         type: 'LOGGED_IN_USER',
         payload: {
           email: user.email,
           token: idTokenResult.token,
-        }
+        },
       });
 
-      history.push('/')
-
+      history.push('/');
     } catch (error) {
-      console.log(error)
-      toast.error(error.message)
-      setLoading(false)
-
+      console.log(error);
+      toast.error(error.message);
+      setLoading(false);
     }
   };
 
   const googleLogin = async () => {
-    auth.signInWithPopup(googleAuthProvider)
+    auth
+      .signInWithPopup(googleAuthProvider)
       .then(async (result) => {
         const { user } = result;
         const idTokenResult = await user.getIdTokenResult();
@@ -105,26 +110,32 @@ const Login = ({ history }) => {
     <div className="container p-5">
       <div className="row">
         <div className="col-md-6 offset-md-3">
-        {loading ? <h4 className="text-danger">Loading...</h4> : <h4>Login</h4>}
+          {loading ? (
+            <h4 className="text-danger">Loading...</h4>
+          ) : (
+            <h4>Login</h4>
+          )}
 
-        {loginForm()}
+          {loginForm()}
 
-        <button
-          onClick={googleLogin}
-          type="danger"
-          className="mb-3"
-          block
-          shape="round"
-          icon={<GoogleOutlined />}
-          size="large"
-        >
+          <button
+            onClick={googleLogin}
+            type="danger"
+            className="mb-3"
+            block
+            shape="round"
+            icon={<GoogleOutlined />}
+            size="large"
+          >
             Login with Google
-        </button>
-          
-          <Link to='/forgot/password' className='float-right text-danger'>Forgot Password</Link>
+          </button>
+
+          <Link to="/forgot/password" className="float-right text-danger">
+            Forgot Password
+          </Link>
+        </div>
       </div>
-      </div>
-      </div>
+    </div>
   );
 };
 export default Login;
