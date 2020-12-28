@@ -14,20 +14,20 @@ const Register = ({ history }) => {
   }, [user]);
 
   const handleSubmit = async (e) => {
-    e.prevenDefault();
+    e.preventDefault();
+    // console.log("ENV --->", process.env.REACT_APP_REGISTER_REDIRECT_URL);
     const config = {
-      url: process.env.REACT_APP_REGISTER_REDIRECT_URL,
+      url: 'http://localhost:3000/register-complete',
       handleCodeInApp: true,
     };
 
     await auth.sendSignInLinkToEmail(email, config);
     toast.success(
-      `Email is sent to ${email}.  Click the link to complete your registration.`,
+      `Email is sent to ${email}. Click the link to complete your registration.`,
     );
-
-    //save user email to local storage
+    // save user email in local storage
     window.localStorage.setItem('emailForRegistration', email);
-    //clear state
+    // clear state
     setEmail('');
   };
 
